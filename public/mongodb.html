@@ -1,0 +1,62 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+    <link href="css/bootstrap.min.css" rel="stylesheet" />
+    <script src="js/jquery.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/people.js"></script>
+</head>
+<body ng-app="mongoApp">
+    <div class="container" ng-controller="mongoAppController">
+        <h1>MongoDB on openshift</h1>
+        <table class="table table-striped ">
+            <thead>
+                <tr>
+                    <th>Conference</th>
+                    <th>City</th>
+                    <th>Team</th>
+                    <th>Key Player</th>
+
+                    <th>&nbsp;</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="p in people">
+                    <td>{{p.conference}}</td>
+                    <td>{{p.city}}</td>
+                    <td>{{p.team}}</td>
+                    <td>{{p.name}}</td>
+
+                    <td>
+                        <button ng-click="select(p._id)" class="btn btn-warning">
+                            <span class="glyphicon glyphicon-pencil"></span>
+                        </button>
+                        <button ng-click="remove(p._id )" class="btn btn-danger">
+                            <span class="glyphicon glyphicon-remove-sign"></span>
+                        </button>
+                    </td>
+
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td><input class="form-control" ng-model="selectedPeople.conference" /></td>
+                    <td><input class="form-control" ng-model="selectedPeople.city" /></td>
+                    <td><input class="form-control" ng-model="selectedPeople.team" /></td>
+                    <td><input class="form-control" ng-model="selectedPeople.name" /></td>
+                    <td>
+                        <button class="btn btn-success" ng-click="add(selectedPeople)">
+                            <span class="glyphicon glyphicon-plus"></span>
+                        </button>
+                        <button class="btn btn-success" ng-click="update(selectedPeople)">
+                            <span class="glyphicon glyphicon-ok-sign"></span>
+                        </button>
+                    </td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</body>
+</html>

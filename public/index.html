@@ -1,0 +1,171 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+    <link  href="css/bootstrap.css" rel="stylesheet"/>
+    <script src="js/jquery.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.min.js"></script>
+    <script src="js/kobe.js"></script>
+</head>
+<body ng-app="KobeApp">
+    
+    <div ng-controller="KobeController" class="container">
+<h1>Decription</h1>
+        <p>In this experiment I tried server-end nodejs on oopenshift and send back the json data,at first I  messed up with the data and can't load the page in <code>public dir</code>,cause the nodejs use the
+        middleware so the path is really important the set in the right way. Another one is that my json data has two hierarchy, I got better understanding of how to push the data and how <code>ng-model</code>works </p>
+        <h2>{{kobe.name}}</h2>
+            <img ng-src="{{kobe.picUrl}}" width=250 height=250 style="padding:10px;padding-top:0px;"/>
+
+        <div style="float:left ;width:800px;padding-top:0px;">
+           
+            <table class="table table-striped ">
+                <thead>
+                    <tr>
+                        <th>Season</th>
+                        <th>PTS</th>
+                        <th>AST</th>
+                        <th>REB</th>
+                        <th>FG</th>
+                        <th>&nbsp;</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="k in kobe.stats">
+                        <td>{{k.season}}</td>
+                        <td>{{k.PTS}}</td>
+                        <td>{{k.REB}}</td>
+                        <td>{{k.AST}}</td>
+                        <td>{{k.FG}}</td>
+                        <td>
+                            <button ng-click="select($index)" class="btn btn-warning">
+                                <span class="glyphicon glyphicon-pencil"></span>
+                            </button>
+                        </td>
+
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td><input class="form-control"  ng-model="stats.season"/></td>
+                        <td><input class="form-control" ng-model="stats.PTS" /></td>
+                        <td><input class="form-control" ng-model="stats.REB" /></td>
+                        <td><input class="form-control" ng-model="stats.AST" /></td>
+                        <td><input class="form-control" ng-model="stats.FG" /></td>
+                        <td><button class="btn btn-success" ng-click="add(stats)"><span class="glyphicon glyphicon-plus"></span></button></td>
+                    </tr>
+                </tfoot>
+            </table>
+           <table>
+               <thead>
+                   <tr>
+                       <th>Season</th>
+                       <th>PTS</th>
+                       <th>AST</th>
+                       <th>REB</th>
+                       <th>FG</th>
+                       <th>&nbsp;</th>
+                   </tr>
+               </thead>
+               <tbody>
+                   <tr>
+                       <td><input class="form-control" ng-model="selectedStats.season" /></td>
+                       <td><input class="form-control" ng-model="selectedStats.PTS" /></td>
+                       <td><input class="form-control" ng-model="selectedStats.REB" /></td>
+                       <td><input class="form-control" ng-model="selectedStats.AST" /></td>
+                       <td><input class="form-control" ng-model="selectedStats.FG" /></td>
+                       <td><button class="btn btn-success" ng-click="update(selectedStats)"><span class="glyphicon glyphicon-plus"></span></button></td>
+                   </tr>
+               </tbody>
+           </table>
+        </div>
+</div>
+    <div class="container">
+                <h3>Code Snippet</h3>
+                <h5>Server.js</h5>
+        <pre>
+        var express = require('express');
+        var app = express();
+        app.use(express.static(__dirname + '/public'));
+
+
+        var bodyParser = require('body-parser');
+        var multer = require('multer');
+
+        app.use(bodyParser.json());
+        app.use(bodyParser.urlencoded({ extended: true }));
+        app.use(multer());
+
+
+        var kobe =
+        {
+        name: "Kobe Bryant", picUrl: "https://media.licdn.com/mpr/mpr/p/8/005/095/35f/24f22a9.jpg",
+        stats: [
+        { season: "08-09", PTS: "26.8", AST: "4.9", REB: "5.2", FG: "46.7%" },
+        { season: "09-10", PTS: "27.0", AST: "5.0", REB: "5.4", FG: "45.6%" },
+        { season: "10-11", PTS: "25.3", AST: "4.7", REB: "5.1", FG: "45.1%" }
+
+
+        ],
+        video: ""
+        }
+
+
+        app.post("/api/kobe/stats", function (req, res) {
+        var obj = req.body;
+        kobe.stats.push(obj);
+        res.json(kobe);
+        });
+
+        app.put("api/kobe/:id", function (req, res) {
+        kobe[req.params.id] = req.body;
+        res.json(kobe);
+        });
+
+        app.get("/api/kobe", function (req, res) {
+        res.json(kobe);
+        });
+
+
+
+        var ipaddress = process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1'
+        var port = process.env.OPENSHIFT_NODEJS_PORT || 3000;
+        app.listen(port, ipaddress);
+
+
+         </pre>
+                <h3>client.js</h3>
+                <pre>
+  var app = angular.module("KobeApp", []);
+app.controller("KobeController", function ($scope, $http) {
+    $http.get("/api/kobe")
+    .success(function (response) {
+        $scope.kobe = response;
+        console.log($scope.kobe)
+    });
+    $scope.selectedIndex = null;
+    $scope.select = function (index) {
+        $scope.selectedIndex = index;
+        $scope.selectedStats = $scope.kobe.stats[index];
+    }
+    
+    $scope.add = function (stats) {
+        $http.post("/api/kobe/stats", stats)
+      .success(function (response) {
+            $scope.kobe = response;
+    
+            console.log($scope.kobe)
+      });   
+    };
+    $scope.update = function (selectedStats) {
+        $http.put("/api/kobe/stats/" + $scope.selectedIndex, selectedStats)
+        .success(function (response) {
+            $scope.kobe = response;
+          });
+        console.log(selectedStats)
+    };
+});
+         </pre>
+            </div>
+
+</body>
+</html>
